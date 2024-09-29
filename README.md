@@ -44,7 +44,7 @@ It allows users to upload an image, extract text, and search keywords from the t
 - Run the application:
   python app.py
 
-### Features
+## Features
 
 Multi-Language Support: Capable of extracting text in multiple languages, specifically English and Hindi, to cater to a diverse user base.
 
@@ -66,7 +66,7 @@ Output Formatting Options: Users can receive extracted text in different formats
 
 Responsive Design: The web application is responsive, ensuring a good user experience on both desktop and mobile devices.
 
-### Model Information
+## Model Information
 
 This application utilizes the CPU version of the GOT (General OCR Theory) model for optical character recognition (OCR). The model is loaded from the Hugging Face model hub as follows:
 
