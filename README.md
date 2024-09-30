@@ -96,5 +96,4 @@ effective multi-language text extraction capabilities
 
 --Advanced Styling: The application features modern design elements for buttons 
   and inputs, enhancing visual appeal and usability.
-
-  Thanks
+# Thanks
