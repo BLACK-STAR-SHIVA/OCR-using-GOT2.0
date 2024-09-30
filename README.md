@@ -11,7 +11,7 @@ license: other
 short_description: An OCR and Document Search Web Application.
 ---
 
-Qwen2-VL-2B-Instruct: Multi-Language OCR
+###Qwen2-VL-2B-Instruct: Multi-Language OCR
 Project Description
 This project is a web application that performs Optical Character Recognition (OCR) on uploaded images, targeting text in both English and Hindi. It allows users to upload an image, extract text, and search keywords from the text.
 
