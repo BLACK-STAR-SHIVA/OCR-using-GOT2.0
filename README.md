@@ -11,67 +11,59 @@ license: other
 short_description: An OCR and Document Search Web Application.
 ---
 
-# General OCR Theory (GOT): Multi-Language OCR
+Qwen2-VL-2B-Instruct: Multi-Language OCR
+Project Description
+This project is a web application that performs Optical Character Recognition (OCR) on uploaded images, targeting text in both English and Hindi. It allows users to upload an image, extract text, and search keywords from the text.
 
-## Project Description
-
-This project is a web application that performs Optical Character Recognition (OCR) on uploaded images, targeting text in both English and Hindi.
-It allows users to upload an image, extract text, and search keywords from the text.
-
-## Prerequisites
-
-- NVIDIA GPU and Driver is installed
-- Python 3.7 or later installed.
-- (Optional)Set up a virtual environment
-  python -m venv ocr
-  venv\Scripts\activate
-
-## Setup Instructions
-
+Prerequisites
+(Optional)NVIDIA GPU and Driver is installed
+Python 3.7 or later installed.
+(Optional)Set up a virtual environment python -m venv ocr venv\Scripts\activate
+Setup Instructions
 [All this Code is for windows only]
 
-- Clone the git Repository
-  git clone <repository_url>
-  cd <repository_directory>
+Clone the git Repository git clone https://github.com/BLACK-STAR-SHIVA/OCR-using-Qwen2-VL-2B-Instruct cd OCR-using-Qwen2-VL-2B-Instruct
 
-- (Optional)Set up a virtual environment
-  python -m venv ocr
-  venv\Scripts\activate
+(Optional)Set up a virtual environment python -m venv ocr venv\Scripts\activate
 
-- Install dependencies:
-  pip install -r requirements.txt
+Install dependencies: pip install -r requirements.txt
 
-- Run the application:
-  python app.py
+Run the application: python app.py
 
-## Features
+Important Notes
+--The system is using CPU now so the process can be slow upto minutes.(Because of not Enough Resources)
 
-Multi-Language Support: Capable of extracting text in multiple languages, specifically English and Hindi, to cater to a diverse user base.
+--The Code is made to run or CPU but it can be Modified for you if you are using GPU you can uncomment the line 39 and proceed to execute.
 
-Customizable Search: Users can input any word or phrase to search within the extracted text, making the search functionality flexible.
+Model Information
+This application utilizes the CPU version of the Qwen2-VL-2B-Instruct model for optical character recognition (OCR). The model is loaded from the Hugging Face model hub as follows:
 
-Highlighting Matches: The application visually highlights all occurrences of the search term in the extracted text, improving user experience and ease of reading.
+Model: Qwen/Qwen2-VL-2B-Instruct Processor: AutoProcessor.from_pretrained("Qwen/Qwen2-VL-2B-Instruct") Although the code includes functions for initializing a GPU version of the model, the deployed version exclusively uses the CPU model due to the limitations of the Hugging Face deployment environment. This choice may lead to slower processing times compared to a GPU-enabled version. However, it ensures compatibility across various deployment scenarios, including environments without GPU support.
 
-User-Friendly Interface: Built with Gradio, providing an intuitive and interactive web interface for seamless user interactions.
+By relying on the CPU model, the application maintains accessibility for a wider range of users while still delivering effective multi-language text extraction capabilities
 
-Temporary Image Storage: Automatically creates a temporary directory for storing uploaded images, ensuring that the original files remain unaffected.
+Features
+--Multi-Language Support: Capable of extracting text in multiple languages, specifically English and Hindi, to cater to a diverse user base.
 
-Error Handling: Provides user-friendly error messages in case of issues during text extraction or file upload, improving reliability.
+--User-Friendly Interface: Built with Gradio, providing an intuitive and interactive web interface for seamless user interactions.
 
-Cross-Platform Compatibility: Designed to run in any environment, including cloud platforms, due to its reliance on CPU for the model execution.
+--Image Upload and Capture: Users can upload images or capture them using their webcam for OCR processing.
 
-Batch Processing: (If applicable) Allows multiple images to be uploaded and processed in one go, making it efficient for users needing to extract text from several images at once.
+--Text Extraction: The application extracts text from images using the Qwen2-VL model, offering advanced capabilities in optical character recognition.
 
-Output Formatting Options: Users can receive extracted text in different formats, such as plain text or JSON, depending on their requirements.
+--Customizable Keyword Search: Users can input any word or phrase to search within the extracted text, making the search functionality flexible.
 
-Responsive Design: The web application is responsive, ensuring a good user experience on both desktop and mobile devices.
+--Highlighting Matches: The application visually highlights occurrences of the search term in the extracted text, improving user experience and ease of reading.
 
-## Model Information
+--Responsive Design: The web application is responsive, ensuring a good user experience on both desktop and mobile devices.
 
-This application utilizes the CPU version of the GOT (General OCR Theory) model for optical character recognition (OCR). The model is loaded from the Hugging Face model hub as follows:
+--Error Handling: Provides user-friendly error messages in case of issues during text extraction or file upload, improving reliability.
 
-Model: ucaslcl/GOT-OCR2_0
-Tokenizer: ucaslcl/GOT-OCR2_0
-Although the code includes functions for initializing a GPU version of the model, the deployed version exclusively uses the CPU model due to the limitations of the Hugging Face deployment environment. This choice may lead to slower processing times compared to a GPU-enabled version. However, it ensures compatibility across various deployment scenarios, including environments without GPU support.
+--Cross-Platform Compatibility: Designed to run in any environment, including cloud platforms, due to its reliance on CPU for model execution.
 
-By relying on the CPU model, the application maintains accessibility for a wider range of users while still delivering effective multi-language text extraction capabilities.
+User Experience
+--Interactive Elements: The interface includes buttons for extracting text and searching for keywords, providing an engaging user experience.
+
+--Advanced Styling: The application features modern design elements for buttons and inputs, enhancing visual appeal and usability.
+
+Thanks
