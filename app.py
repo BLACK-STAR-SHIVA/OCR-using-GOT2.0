@@ -1,80 +1,145 @@
 import gradio as gr
-import os
-import uuid
-import shutil
-import re
-from transformers import AutoModel, AutoTokenizer
+from PIL import Image
+import torch
+from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 
-# Load GOT-OCR model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained('ucaslcl/GOT-OCR2_0', trust_remote_code=True)
-model = AutoModel.from_pretrained('ucaslcl/GOT-OCR2_0', trust_remote_code=True, low_cpu_mem_usage=True, device_map='cpu', use_safetensors=True)
-model = model.eval()
+# Load model and processor
+model = Qwen2VLForConditionalGeneration.from_pretrained(
+    "Qwen/Qwen2-VL-2B-Instruct",
+    torch_dtype="auto",
+    device_map="auto",
+    ignore_mismatched_sizes=True  # Ignore config mismatches
+)
+processor = AutoProcessor.from_pretrained(
+    "Qwen/Qwen2-VL-2B-Instruct"
+)
 
-UPLOAD_FOLDER = "./uploads"
-RESULTS_FOLDER = "./results"
+# OCR extraction function
+def extract_text_from_image(image):
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "image"},
+                {"type": "text", "text": "Extract text from the image(OCR)"}
+            ]
+        }
+    ]
 
-# Ensure directories for uploads and results
-for folder in [UPLOAD_FOLDER, RESULTS_FOLDER]:
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    text_prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
 
-# Function to run OCR on uploaded image
-def run_GOT(image, search_term):
-    unique_id = str(uuid.uuid4())
-    image_path = os.path.join(UPLOAD_FOLDER, f"{unique_id}.png")
+    inputs = processor(
+        text=[text_prompt],
+        images=[image],
+        padding=True,
+        return_tensors="pt"
+    )
     
-    # Save the uploaded image
-    shutil.copy(image, image_path)
-    
-    try:
-        # Run OCR in plain text mode, which will handle multiple languages
-        res = model.chat(tokenizer, image_path, ocr_type='ocr')
-        
-        # Highlight search term in the result
-        highlighted_text = highlight_text(res, search_term)
-        
-        return highlighted_text, None
-    except Exception as e:
-        return f"Error: {str(e)}", None
-    finally:
-        # Clean up the image after processing
-        if os.path.exists(image_path):
-            os.remove(image_path)
+    # Uncomment this line if GPU is available
+    # inputs = inputs.to("cuda")
 
-# Function to highlight search term in text
-def highlight_text(text, search_term):
-    if not search_term:
-        return text
-    pattern = re.compile(re.escape(search_term), re.IGNORECASE)
-    return pattern.sub(lambda m: f'<span style="background-color: yellow;">{m.group()}</span>', text)
+    # Reduce token generation for faster results
+    output_ids = model.generate(**inputs, max_new_tokens=512)
+
+    generated_ids = [
+        output_ids[len(input_ids):]
+        for input_ids, output_ids in zip(inputs.input_ids, output_ids)
+    ]
+
+    extracted_text = processor.batch_decode(
+        generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True
+    )[0]
+
+    return extracted_text
+
+# Keyword search function
+def search_keyword(extracted_text, keyword):
+    if not extracted_text:
+        return "No text extracted. Please upload an image and run OCR first."
+    
+    if keyword:
+        if keyword.lower() in extracted_text.lower():
+            return f"Keyword '{keyword}' found in the extracted text."
+        else:
+            return f"Keyword '{keyword}' not found in the extracted text."
+    return "Please enter a keyword to search."
 
 # Gradio Interface
-title_html = """
-<h2> <span class="gradient-text" id="text">General OCR Theory (GOT)</span>: Multi-Language OCR (English & Hindi)</h2>
+with gr.Blocks() as demo:
+    gr.Markdown("<h1 style='text-align: center; color: #2c3e50;'>OCR with Keyword Search</h1>")
+    
+    # Step 1: Take photo and extract text
+    img_input = gr.Image(type="pil", label="Upload or Capture Image for OCR")
+    extract_btn = gr.Button("Extract Text", elem_id="extract-button")
+    extracted_text = gr.Textbox(label="Extracted Text from OCR", lines=4, interactive=False)
+
+    extract_btn.click(extract_text_from_image, inputs=[img_input], outputs=[extracted_text])
+    
+    # Step 2: Keyword search
+    keyword_input = gr.Textbox(label="Enter keyword to search in extracted text", placeholder="Type your keyword here")
+    search_btn = gr.Button("Search Keyword", elem_id="search-button")
+    search_result = gr.Textbox(label="Keyword Search Result", lines=2, interactive=False)
+
+    search_btn.click(search_keyword, inputs=[extracted_text, keyword_input], outputs=[search_result])
+
+# Custom CSS for advanced styling
+demo.css = """
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+    padding: 20px;
+}
+
+#extract-button {
+    width: 150px;  
+    height: 45px;  
+    font-size: 16px; 
+    background: linear-gradient(45deg, #4CAF50, #45a049); 
+    color: white; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background 0.3s, transform 0.3s; 
+}
+
+#extract-button:hover {
+    background: linear-gradient(45deg, #45a049, #4CAF50); 
+    transform: scale(1.05); 
+}
+
+#search-button {
+    width: 150px;  
+    height: 45px;  
+    font-size: 16px; 
+    background: linear-gradient(45deg, #008CBA, #007bb5); 
+    color: white; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background 0.3s, transform 0.3s; 
+}
+
+#search-button:hover {
+    background: linear-gradient(45deg, #007bb5, #008CBA); 
+    transform: scale(1.05); 
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+.gradio-container {
+    border-radius: 10px; 
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.textbox {
+    border: 1px solid #bdc3c7; 
+    border-radius: 5px; 
+    padding: 10px;
+}
 """
 
-with gr.Blocks() as demo:
-    gr.HTML(title_html)
-    gr.Markdown("""
-    ### Instructions
-    Upload your image below and click "Submit" to extract text in both English and Hindi. You can also enter a word or phrase to highlight in the extracted text.
-    """)
-
-    # Upload and output interface
-    with gr.Row():
-        with gr.Column():
-            image_input = gr.Image(type="filepath", label="Upload your image")
-            search_input = gr.Textbox(label="Enter a word or phrase to search", placeholder="Search term")
-            submit_button = gr.Button("Submit")
-        
-        with gr.Column():
-            ocr_result = gr.HTML(label="Extracted Text")
-
-    # Connect the submit button with the OCR function
-    submit_button.click(run_GOT, inputs=[image_input, search_input], outputs=[ocr_result])
-
-# Launch the demo
-if __name__ == "__main__":
-    demo.launch()
-
-    
+# Launch the Gradio app
+demo.launch()
